@@ -38,7 +38,7 @@ using (var scope = host.Services.CreateScope())
         faker.RuleFor(a => a.Plz, f => f.Address.ZipCode());
         faker.RuleFor(a => a.Ort, f => f.Address.City());
 
-        var fakeAdressen = faker.Generate(5000);
+        var fakeAdressen = faker.Generate(100);
         await dbContext.Adressen.AddRangeAsync(fakeAdressen);
         await dbContext.SaveChangesAsync();
     }
