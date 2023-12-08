@@ -1,0 +1,151 @@
+﻿@page "/Adressen"
+@inject AdressenService AdressenService
+@inject IJSRuntime JsRuntime
+
+<PageTitle>Adressen</PageTitle>
+
+<h1>Adresse </h1>
+<button class="btn btn-primary" @onclick="() => _adresse = new Adresse()">Neue Adresse</button>
+<button class="btn btn-secondary" @onclick="DownloadDatabase">Datenbank herunterladen</button>
+
+@if (_adressen == null)
+{
+    <p><em>Loading...</em></p>
+}
+
+else
+{
+    <div class="row">
+
+        <div class="col table-wrapper">
+            <table class="table table-responsive table-striped table-hover table-sm table">
+                <thead class="bg-light sticky-top top-0">
+                    <tr>
+                        <th>Id</th>
+                        <th>Name1</th>
+                        <th>Strasse</th>
+                        <th>Plz</th>
+                        <th>Ort</th>
+                        <th>Sync-Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <Virtualize TItem="Adresse" Items="_adressen">
+                        @{
+                            bool isCurrentRowSelected = _adresse != null && context.Id == _adresse.Id;
+                        }
+
+                        <tr @onclick="() => EditAdresse(context)" class="@((isCurrentRowSelected) ? "table-active" : "")">
+                            <td>@context.Id</td>
+                            <td>@context.Name1</td>
+                            <td>@context.Strasse</td>
+                            <td>@context.Plz</td>
+                            <td>@context.Ort</td>
+                            <td>
+                            </td>
+                        </tr>
+                    </Virtualize>
+                </tbody>
+            </table>
+        </div>
+
+        @{
+            string visible = (_adresse != null) ? "visible" : "hidden";
+        }
+
+        <div class="@visible">
+            @if (_adresse != null)
+            {
+                <EditForm Model="_adresse" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    <div class="form-group">
+                        <label for="name1">Name1</label>
+                        <InputText id="name1" class="form-control" @bind-Value="_adresse.Name1" />
+                    </div>
+                    <div class="form-group">
+                        <label for="strasse">Strasse</label>
+                        <InputText id="strasse" class="form-control" @bind-Value="_adresse.Strasse" />
+                    </div>
+                    <div class="form-group">
+                        <label for="plz">Plz</label>
+                        <InputText id="plz" class="form-control" @bind-Value="_adresse.Plz" />
+                    </div>
+                    <div class="form-group">
+                        <label for="ort">Ort</label>
+                        <InputText id="ort" class="form-control" @bind-Value="_adresse.Ort" />
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-success">Speichern</button>
+                        <button class="btn btn-danger" @onclick="CancelEdit">Abbrechen</button>
+                    </div>
+                </EditForm>
+            }
+        </div>
+    </div>
+}
+
+<style>
+    .hidden {
+        width: 0;
+        transition: all 0.5s ease-in-out;
+    }
+
+    .visible {
+        display: block;
+        width: 50%;
+        transition: all 0.5s ease-in-out;
+    }
+
+    .table-active {
+        background-color: #c8e6c9;
+    }
+
+    .table-wrapper {
+        max-height: 500px;
+        overflow: auto;
+        display: inline-block;
+    }
+</style>
+
+@code
+{
+    private List<Adresse> _adressen;
+    private Adresse _adresse;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _adressen = await AdressenService.GetAdressenAsync();
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        if (_adresse.Id == 0)
+        {
+            await AdressenService.AddAdresseAsync(_adresse);
+        }
+        else
+        {
+            await AdressenService.UpdateAdresseAsync(_adresse);
+        }
+
+        _adressen = await AdressenService.GetAdressenAsync();
+        _adresse = null;
+    }
+
+    private async Task EditAdresse(Adresse adresse)
+    {
+        _adresse = await AdressenService.GetAdresseAsync(adresse.Id);
+    }
+
+    private void CancelEdit()
+    {
+        _adresse = null;
+    }
+
+    private async Task DownloadDatabase()
+    {
+        await JsRuntime.InvokeVoidAsync("downloadDatabase");
+    }
+}

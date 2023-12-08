@@ -1,0 +1,20 @@
+﻿<p class="kreis"></p>
+
+<style>
+    .kreis {
+        margin: 0px;
+        width: 8px;
+        aspect-ratio: 1;
+        background-color: @HexColor;
+        border-radius: 50%;
+        background: @HexColor;
+        box-shadow: 0 0 5px @HexColor;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+</style>
+
+@code
+{
+    [Parameter]
+    public string HexColor { get; set; }
+}

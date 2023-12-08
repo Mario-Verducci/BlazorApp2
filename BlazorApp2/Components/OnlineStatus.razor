@@ -1,0 +1,26 @@
+﻿@inject IJSRuntime JsRuntime
+@inject NetworkService NetworkService
+
+<div style="margin-right: 10px; font-weight: 600; color: @HexColor">@Text</div>
+<Kreis HexColor="@HexColor" />
+
+@code
+{
+    Timer _timer;
+
+    string Text => IsOnline ? "Online" : "Offline";
+    string HexColor => IsOnline ? "#51BB93" : "#E94F37";
+
+    public static bool IsOnline { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _timer = new Timer(_ => CheckOnlineStatus(), null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+    }
+
+    private async void CheckOnlineStatus()
+    {
+        IsOnline = await NetworkService.IsOnlineAsync();
+        StateHasChanged();
+    }
+}
